@@ -40,7 +40,7 @@ interface PuterChatOptions {
   max_tokens?: number;
   temperature?: number;
   tools?: {
-    type: "function";
+    type: 'function';
     function: {
       name: string;
       description: string;
@@ -50,6 +50,8 @@ interface PuterChatOptions {
 }
 
 interface AIResponse {
+  success: any;
+  text: string;
   index: number;
   message: {
     role: string;
