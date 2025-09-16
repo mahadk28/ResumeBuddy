@@ -27,32 +27,6 @@ const Upload = () => {
     ]);
   }
 
-  // Mock AI response for testing
-  const createMockFeedback = (jobTitle: string, companyName: string) => {
-    return {
-      strengths: [
-        "Strong technical skills relevant to the position",
-        "Clear work experience progression",
-        "Good educational background",
-        "Relevant certifications and achievements"
-      ],
-      weaknesses: [
-        "Could include more specific metrics and achievements",
-        "Missing some industry-specific keywords",
-        "Contact information could be more prominent",
-        "Could benefit from a stronger summary section"
-      ],
-      suggestions: [
-        `Tailor your resume more specifically for ${jobTitle} roles`,
-        `Include keywords from ${companyName}'s job posting`,
-        "Add quantifiable achievements (numbers, percentages, dollar amounts)",
-        "Consider reformatting for better ATS compatibility",
-        "Include a professional summary at the top"
-      ],
-      atsScore: Math.floor(Math.random() * 20) + 75, // Random score between 75-95
-      summary: `Your resume shows good potential for the ${jobTitle} position at ${companyName}. With some targeted improvements focusing on keyword optimization and quantifiable achievements, you can significantly improve your chances of getting past ATS systems and landing an interview.`
-    };
-  };
 
   const handleAnalyze = async ({
                                  companyName,
@@ -104,46 +78,92 @@ const Upload = () => {
 
       setStatusText("Analyzing resume...");
 
-      // Try AI first, fallback to mock if it fails
+      // Analyze with AI (no mock fallback). Retry once on transient errors.
       let feedback;
-      try {
-        feedback = await withTimeout(
-          ai.feedback(
-            uploadedFile.path,
-            prepareInstructions({ jobTitle, jobDescription })
-          ),
-          30000 // Shorter timeout
-        );
+      let attempts = 0;
+      const maxAttempts = 2;
+      while (attempts < maxAttempts) {
+        try {
+          attempts++;
+          setStatusText(attempts === 1 ? 'Analyzing resume…' : 'Analyzing resume… (retry)');
+          feedback = await withTimeout(
+            ai.feedback(
+              uploadingImage.path,
+              prepareInstructions({ jobTitle, jobDescription })
+            ),
+            60000
+          );
 
-        if (!feedback || !feedback.success) {
-          throw new Error('AI service returned error or no response');
+          if (!feedback) {
+            throw new Error('AI service returned error or no response');
+          }
+
+          // Extract text content from various possible AI response shapes
+          let feedbackText: any;
+          const messageAny: any = (feedback as any).message;
+          const content = messageAny?.content ?? (Array.isArray(messageAny) ? messageAny : undefined);
+
+          if (typeof content === 'string') {
+            feedbackText = content;
+          } else if (Array.isArray(content) && content.length > 0) {
+            const first = content[0];
+            feedbackText = first?.text ?? first?.content ?? (typeof first === 'string' ? first : undefined);
+          } else if (typeof messageAny === 'string') {
+            feedbackText = messageAny;
+          }
+
+          if (!feedbackText || typeof feedbackText !== 'string') {
+            throw new Error('Empty AI response content');
+          }
+
+          // Debug logs: raw AI response and extracted text
+          try {
+            // eslint-disable-next-line no-console
+            console.log('AI raw response:', feedback);
+          } catch {}
+          try {
+            // eslint-disable-next-line no-console
+            console.log('AI extracted text:', feedbackText);
+          } catch {}
+
+          // Expose for manual inspection in DevTools
+          try {
+            (window as any).__lastAIResponse = feedback;
+            (window as any).__lastAIText = feedbackText;
+          } catch {}
+
+          let parsedFeedback: any;
+          try {
+            parsedFeedback = JSON.parse(feedbackText);
+          } catch (parseErr) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to parse AI feedback text as JSON:', feedbackText, parseErr);
+            throw parseErr;
+          }
+
+          data.feedback = parsedFeedback;
+
+          // Additional debug: final data before persisting
+          try {
+            // eslint-disable-next-line no-console
+            console.log('Final data before save:', data);
+            (window as any).__lastResumeData = data;
+          } catch {}
+
+          // Persist and navigate only on success
+          await kv.set(`resume:${uuid}`, JSON.stringify(data));
+          setStatusText('Analysis completed. Redirecting...');
+          setTimeout(() => {
+            navigate(`/results/${uuid}`);
+          }, 800);
+          return; // done
+        } catch (aiErr) {
+          console.error(`AI analysis attempt ${attempts} failed:`, aiErr);
+          if (attempts >= maxAttempts) {
+            throw aiErr;
+          }
         }
-
-        const feedbackText = typeof feedback.message.content === 'string'
-          ? feedback.message.content
-          : feedback.message.content[0].text;
-
-        data.feedback = JSON.parse(feedbackText);
-
-      } catch (aiError) {
-        console.log('AI analysis failed, using mock response:', aiError);
-        setStatusText("AI service unavailable, generating sample analysis...");
-
-        // Use mock feedback when AI fails
-        data.feedback = createMockFeedback(jobTitle, companyName);
-
-        // Add a note that this is a mock response
-        data.feedback.note = "This is a sample analysis due to AI service limitations. For actual analysis, please try again later.";
       }
-
-      await kv.set(`resume:${uuid}`, JSON.stringify(data));
-      setStatusText('Analysis completed. Redirecting...');
-      console.log('Final data:', data);
-
-      // Navigate to results page
-      setTimeout(() => {
-        navigate(`/results/${uuid}`);
-      }, 1500);
 
     } catch (error) {
       console.error('Analysis failed:', error);
@@ -192,11 +212,6 @@ const Upload = () => {
             <>
               <h2>{statusText}</h2>
               <img src="/images/resume-scan.gif" className="w-full" />
-              {statusText.includes('sample analysis') && (
-                <p style={{ color: '#ff9800', fontSize: '14px', marginTop: '10px' }}>
-                  Note: Using sample analysis due to AI service limits. Please try again later for actual AI analysis.
-                </p>
-              )}
             </>
           ) : (
             <h2>Upload Your Resume For An ATS Score And Tips To Improve</h2>

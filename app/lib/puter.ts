@@ -74,7 +74,8 @@ interface PuterStore {
     ) => Promise<AIResponse | undefined>;
     feedback: (
       path: string,
-      message: string
+      message: string,
+      models?: string[]
     ) => Promise<AIResponse | undefined>;
     img2txt: (
       image: string | File | Blob,
@@ -327,31 +328,53 @@ export const usePuterStore = create<PuterStore>((set, get) => {
     >;
   };
 
-  const feedback = async (path: string, message: string) => {
+  const feedback = async (path: string, message: string, models?: string[]) => {
     const puter = getPuter();
     if (!puter) {
       setError("Puter.js not available");
       return;
     }
 
-    return puter.ai.chat(
-      [
-        {
-          role: "user",
-          content: [
+    const tryModels = models && models.length > 0 ? models : ["gpt-4o", "gpt-4o-mini"];
+
+    let lastError: any = null;
+    for (const model of tryModels) {
+      try {
+        const resp = (await puter.ai.chat(
+          [
             {
-              type: "file",
-              puter_path: path,
-            },
-            {
-              type: "text",
-              text: message,
+              role: "user",
+              content: [
+                {
+                  type: "file",
+                  puter_path: path,
+                },
+                {
+                  type: "text",
+                  text: message,
+                },
+              ],
             },
           ],
-        },
-      ],
-      { model: "gpt-4o-mini" }
-    ) as Promise<AIResponse | undefined>;
+          { model }
+        )) as AIResponse | undefined;
+
+        // If response shape includes success flag, ensure it's positive; otherwise accept non-empty message
+        const ok = resp && ("success" in (resp as any) ? (resp as any).success : (resp as any).message);
+        if (ok) {
+          return resp;
+        }
+        lastError = new Error(`Model ${model} returned empty/unsuccessful response`);
+      } catch (err) {
+        console.warn(`AI feedback failed for model ${model}:`, err);
+        lastError = err;
+      }
+    }
+
+    if (lastError) {
+      throw lastError;
+    }
+    return undefined;
   };
 
   const img2txt = async (image: string | File | Blob, testMode?: boolean) => {
