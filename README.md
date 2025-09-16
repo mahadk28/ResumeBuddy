@@ -85,3 +85,44 @@ This template comes with [Tailwind CSS](https://tailwindcss.com/) already config
 ---
 
 Built with ❤️ using React Router.
+
+## Git: If `git` command is not recognized on Windows
+
+If you see this error in PowerShell:
+
+```
+git : The term 'git' is not recognized as the name of a cmdlet, function, script file, or operable program.
+```
+
+You have two options:
+
+A) Install Git (recommended)
+- Download Git for Windows: https://git-scm.com/download/win
+- During setup, keep “Add Git to PATH” enabled.
+- Close and reopen your terminal (or reboot), then verify:
+  - `git --version`
+  - `git status`
+
+If it still fails, ensure Git is on PATH in System Properties > Environment Variables, or launch "Git Bash" and run commands there.
+
+B) Use the project’s Node-based Git fallback (no system Git required)
+This repo includes a lightweight Git workflow using isomorphic-git so you can init and commit without installing Git.
+
+1. Install dependencies:
+```
+npm install
+```
+2. Initialize a repo and make an initial commit:
+```
+npm run git:init
+```
+3. Commit changes later:
+```
+npm run git:commit -- "your commit message"
+```
+
+Notes:
+- The first run creates a .git folder and a .gitignore with sensible defaults.
+- It also sets local user.name and user.email if missing. You can override via env vars:
+  - `GIT_AUTHOR_NAME="Your Name" GIT_AUTHOR_EMAIL="you@example.com" npm run git:commit -- "msg"`
+- This fallback supports local init/add/commit. For pushing to remotes, install system Git or wire isomorphic-git remote/push as needed.
