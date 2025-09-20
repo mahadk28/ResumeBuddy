@@ -154,7 +154,7 @@ const Upload = () => {
           await kv.set(`resume:${uuid}`, JSON.stringify(data));
           setStatusText('Analysis completed. Redirecting...');
           setTimeout(() => {
-            navigate(`/results/${uuid}`);
+            navigate(`/resume/${uuid}`);
           }, 800);
           return; // done
         } catch (aiErr) {
