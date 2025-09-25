@@ -150,3 +150,17 @@ form {
         opacity: 1;
     }
 }
+
+/* Global dark mode by inverting colors on the Remix app only.
+   We re-invert media so they look normal. */
+.dark-mode {
+    filter: invert(1) hue-rotate(180deg);
+}
+.dark-mode img,
+.dark-mode video,
+.dark-mode picture,
+.dark-mode canvas,
+.dark-mode svg,
+.dark-mode iframe {
+    filter: invert(1) hue-rotate(180deg);
+}

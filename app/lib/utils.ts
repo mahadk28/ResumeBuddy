@@ -3,6 +3,14 @@
  * @param bytes - Number of bytes
  * @returns e.g. "0 Bytes", "1 Byte", "1.23 MB"
  */
+
+import {twMerge} from 'tailwind-merge';
+import clsx, { type ClassValue } from 'clsx';
+
+export function cn(...inputs: ClassValue[]){
+  return twMerge(clsx(...inputs));
+
+}
 export function formatSize(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes < 0) return '—';
   if (bytes === 0) return '0 Bytes';

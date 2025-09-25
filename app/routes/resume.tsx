@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { usePuterStore } from '~/lib/puter';
 import Summary from '~/components/Summary';
+import ATS from '~/components/ATS';
+import Details from '~/components/Details';
 
 
 export const meta =()=>([
@@ -74,7 +76,7 @@ const{auth, isLoading, fs, kv } = usePuterStore();
           {feedback ? (
             <div className="flex flex-col gap-8 animate-in fade-in duration-1000">
               <Summary feedback={feedback} />
-              <ATS score ={feedback.ATS.score || 0} suggestions = {feedback.ATS.tips || []}/>
+              <ATS score={feedback.ATS.score || 0} suggestions = {feedback.ATS.tips || []}/>
               <Details feedback={feedback}/>
             </div>
           ):(
