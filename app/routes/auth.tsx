@@ -34,7 +34,7 @@ const Auth = () => {
     <main className="bg-[url('/images/bg-auth.svg')] bg-cover min-h-screen flex items-center justify-center px-4">
       <div className="gradient-border shadow-2xl max-w-4xl w-full">
         <section className="grid md:grid-cols-2 gap-0 bg-white rounded-2xl overflow-hidden">
-          {/* Left side: welcome and highlights */}
+
           <div className="p-8 sm:p-10 flex flex-col justify-center bg-white">
             <div className="flex flex-col gap-4">
               <p className="text-sm font-semibold text-gray-500">Welcome to</p>
