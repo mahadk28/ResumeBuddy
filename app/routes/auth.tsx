@@ -1,5 +1,5 @@
 import { usePuterStore } from '~/lib/puter';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 export const meta = () => ([
@@ -15,9 +15,16 @@ const Auth = () => {
   const params = new URLSearchParams(location.search);
   const next = params.get('next') || '/';
 
+  // Only auto-redirect after a user-initiated sign-in to avoid flicker from guards
+  const shouldRedirectRef = useRef(false);
+
   useEffect(() => {
-    if (auth.isAuthenticated) navigate(next);
-  }, [auth.isAuthenticated, next]);
+    if (!isLoading && auth.isAuthenticated && shouldRedirectRef.current) {
+      navigate(next);
+      // reset so revisiting /auth doesn't immediately bounce
+      shouldRedirectRef.current = false;
+    }
+  }, [isLoading, auth.isAuthenticated, next, navigate]);
 
   return (
     <main className="bg-[url('/images/bg-auth.svg')] bg-cover min-h-screen flex items-center justify-center px-4">
@@ -61,7 +68,19 @@ const Auth = () => {
                   <p>Sign Out</p>
                 </button>
               ) : (
-                <button className="auth-button w-full" onClick={auth.signIn}>
+                <button
+                  className="auth-button w-full"
+                  onClick={async () => {
+                    try {
+                      shouldRedirectRef.current = true;
+                      await auth.signIn();
+                      // redirect handled by effect
+                    } catch (e) {
+                      // if sign-in fails, do not redirect
+                      shouldRedirectRef.current = false;
+                    }
+                  }}
+                >
                   <p>Sign In</p>
                 </button>
               )}
