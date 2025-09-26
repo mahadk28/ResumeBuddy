@@ -13,9 +13,7 @@ const Navbar = () => {
         </Link>
 
         <div className="flex items-center gap-3">
-          {isLoading ? (
-            <span className="text-sm text-gray-500">Loading…</span>
-          ) : auth.isAuthenticated ? (
+          {auth.isAuthenticated ? (
             <button
               onClick={async () => {
                 await auth.signOut();
@@ -25,6 +23,8 @@ const Navbar = () => {
             >
               Sign Out
             </button>
+          ) : isLoading ? (
+            <span className="text-sm text-gray-500">Loading…</span>
           ) : (
             <Link
               to="/auth"

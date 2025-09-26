@@ -145,7 +145,7 @@ const Upload = () => {
       <Navbar />
       <section className="main-section">
         <div className="page-heading">
-          <h1>Helpful Feed Back To Land You Your Dream Job!</h1>
+          <h1>Helpful FeedBack To Land You Your Dream Job!</h1>
           {isProcessing ? (
             <>
               <h2>{statusText}</h2>

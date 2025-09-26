@@ -12,7 +12,7 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const file = acceptedFiles[0] || null;
-      setSelected(file);           // keep local copy so we can clear UI
+      setSelected(file);
       onFileSelect?.(file);
     },
     [onFileSelect]
@@ -29,7 +29,7 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
 
   const clearFile = (e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation();          // don't open file dialog
+    e.stopPropagation();
     setSelected(null);
     onFileSelect?.(null);
   };
@@ -61,7 +61,7 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
               </div>
 
               <button
-                type="button"                // <-- important: prevent form submit
+                type="button"
                 className="p-2 cursor-pointer"
                 onClick={clearFile}
                 aria-label="Remove file"
@@ -72,7 +72,7 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
           ) : (
             <div>
               <p className="text-lg text-gray-500">
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-black">
                   {isDragActive ? 'Drop the PDF here' : 'Click here to upload Resume'}
                 </span>{' '}
                 or drag and drop
