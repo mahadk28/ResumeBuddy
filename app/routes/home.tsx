@@ -1,11 +1,12 @@
 import type { Route } from "./+types/home";
 import Navbar from '~/components/Navbar';
-import { resumes } from '../../constants';
+
 import ResumeCard from '~/components/ResumeCard';
 import { usePuterStore } from '~/lib/puter';
 import Cover from '~/components/Cover';
-import { useLocation, useNavigate } from 'react-router';
-import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
+import { useEffect, useState } from 'react';
+import resume from '~/routes/resume';
 
 
 export function meta({}: Route.MetaArgs) {
@@ -16,12 +17,34 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-    const { auth } = usePuterStore();
+    const { auth , kv,fs } = usePuterStore();
     const navigate = useNavigate();
+    const [resumes,setResumes]=useState<Resume[]>([]);
+    const [loadingResumes,setLoadingResumes]=useState(false);
+
 
   useEffect(() => {
     if (!auth.isAuthenticated) navigate('/auth?next=/');
   }, [auth.isAuthenticated]);
+
+
+  useEffect(() => {
+    const loadResume = async () => {
+      setLoadingResumes(true);
+
+      const resumes = (await kv.list ('resume:*', true)) as KVItem[];
+      const parsedResumes = resumes?.map((resume) => (
+        JSON.parse(resume.value) as Resume
+      ))
+
+      setResumes(parsedResumes || []);
+      setLoadingResumes(false);
+      console.log({parsedResumes});
+    };
+
+
+    loadResume();
+  }, []);
 
   return (
       <main className="bg-[url('/images/bg-main.svg')] bg-cover min-h-screen flex flex-col">
@@ -37,14 +60,24 @@ export default function Home() {
 
         <section className="main-section">
           <div className="page-heading">
-            <h2 className="text-white">Try sample resumes</h2>
-            <p className="text-black">Preview a few examples to see how feedback looks.</p>
+            <h2 className="text-white">Your uploaded resumes</h2>
+            <p className="text-black">These are your recent uploads. Click any card to view the full analysis.</p>
           </div>
-          <div className="resumes-section">
-            {resumes.map((resume) => (
-              <ResumeCard key={resume.id} resume={resume} />
-            ))}
-          </div>
+
+          {!loadingResumes && resumes.length > 0 ? (
+            <div className="resumes-section">
+              {resumes.map((resume) => (
+                <ResumeCard key={resume.id} resume={resume} />
+              ))}
+            </div>
+          ) : (
+            !loadingResumes && (
+              <div className="gradient-border bg-white rounded-2xl p-6 text-center max-w-xl w-full">
+                <p className="text-gray-700 mb-4">No resumes uploaded yet.</p>
+                <a href="/upload" className="primary-button inline-block w-auto">Upload your first resume</a>
+              </div>
+            )
+          )}
         </section>
       </main>
     );
