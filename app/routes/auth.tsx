@@ -38,7 +38,7 @@ const Auth = () => {
           <div className="p-8 sm:p-10 flex flex-col justify-center bg-white">
             <div className="flex flex-col gap-4">
               <p className="text-sm font-semibold text-gray-500">Welcome to</p>
-              <h1 className="text-5xl font-extrabold text-gradient leading-tight">RM</h1>
+              <h1 className="text-5xl font-extrabold text-gradient leading-tight">ResuMate</h1>
               <p className="text-base text-gray-600">Your AI-powered resume sidekick. Sign in to get instant feedback, ATS scoring, and practical tips to land the interview.</p>
             </div>
 
