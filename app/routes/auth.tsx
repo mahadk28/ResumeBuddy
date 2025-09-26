@@ -14,7 +14,7 @@ const Auth = () => {
 
   const params = new URLSearchParams(location.search);
   // Default to Home after sign-in unless an explicit `next` is provided
-  const defaultNext = '/home';
+  const defaultNext = '/';
   const next = params.get('next') || defaultNext;
 
   // Only auto-redirect after a user-initiated sign-in to avoid flicker from guards

@@ -4,10 +4,7 @@ import Navbar from '~/components/Navbar';
 import ResumeCard from '~/components/ResumeCard';
 import { usePuterStore } from '~/lib/puter';
 import Cover from '~/components/Cover';
-import { useNavigate } from 'react-router';
 import { useEffect, useState } from 'react';
-import resume from '~/routes/resume';
-
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -17,16 +14,9 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-    const { auth , kv, fs, isLoading } = usePuterStore();
-    const navigate = useNavigate();
+    const { kv } = usePuterStore();
     const [resumes,setResumes]=useState<Resume[]>([]);
     const [loadingResumes,setLoadingResumes]=useState(false);
-
-
-  useEffect(() => {
-    if (!isLoading && !auth.isAuthenticated) navigate('/auth?next=/home');
-  }, [isLoading, auth.isAuthenticated, navigate]);
-
 
   useEffect(() => {
     const loadResume = async () => {
@@ -42,9 +32,8 @@ export default function Home() {
       console.log({parsedResumes});
     };
 
-
     loadResume();
-  }, []);
+  }, [kv]);
 
   return (
       <main className="bg-[url('/images/bg-main.svg')] bg-cover min-h-screen flex flex-col">
