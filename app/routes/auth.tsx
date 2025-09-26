@@ -13,18 +13,22 @@ const Auth = () => {
   const navigate = useNavigate();
 
   const params = new URLSearchParams(location.search);
-  const next = params.get('next') || '/';
+  // Default to Home after sign-in unless an explicit `next` is provided
+  const defaultNext = '/home';
+  const next = params.get('next') || defaultNext;
 
   // Only auto-redirect after a user-initiated sign-in to avoid flicker from guards
   const shouldRedirectRef = useRef(false);
 
   useEffect(() => {
-    if (!isLoading && auth.isAuthenticated && shouldRedirectRef.current) {
+    if (!isLoading && auth.isAuthenticated && (shouldRedirectRef.current || location.pathname === '/')) {
       navigate(next);
       // reset so revisiting /auth doesn't immediately bounce
-      shouldRedirectRef.current = false;
+      if (shouldRedirectRef.current) {
+        shouldRedirectRef.current = false;
+      }
     }
-  }, [isLoading, auth.isAuthenticated, next, navigate]);
+  }, [isLoading, auth.isAuthenticated, next, navigate, location.pathname]);
 
   return (
     <main className="bg-[url('/images/bg-auth.svg')] bg-cover min-h-screen flex items-center justify-center px-4">

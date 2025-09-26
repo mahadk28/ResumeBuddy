@@ -24,7 +24,7 @@ export default function Home() {
 
 
   useEffect(() => {
-    if (!isLoading && !auth.isAuthenticated) navigate('/auth?next=/');
+    if (!isLoading && !auth.isAuthenticated) navigate('/auth?next=/home');
   }, [isLoading, auth.isAuthenticated, navigate]);
 
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '~/components/Navbar';
 import FileUploader from '~/components/fileUploader';
 import { usePuterStore } from '~/lib/puter';
@@ -9,8 +9,12 @@ import { prepareInstructions } from '../../constants';
 
 
 const Upload = () => {
-  const { fs, ai, kv } = usePuterStore();
+  const { fs, ai, kv, auth, isLoading } = usePuterStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && !auth.isAuthenticated) navigate('/auth?next=/upload');
+  }, [isLoading, auth.isAuthenticated, navigate]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusText, setStatusText] = useState('');
   const [file, setFile] = useState<File | null>(null);
